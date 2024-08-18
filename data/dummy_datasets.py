@@ -32,3 +32,4 @@ def create_cube(length: int, dist: float):
     E = np.array(edges).T  # Shape (2, num_edges)
 
     return coord, E
+

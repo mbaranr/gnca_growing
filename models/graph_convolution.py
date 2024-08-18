@@ -65,3 +65,4 @@ class GraphConv(nn.Module):
             y = F.normalize(y, p=2, dim=2)
 
         return y
+    
