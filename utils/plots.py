@@ -5,22 +5,23 @@ import numpy as np
 def plot_3d_G(G: nx.Graph, 
               coord: np.ndarray, 
               title: str, 
+              ax=None,
               angle: float=30.0,
               node_size: float=100.0,
               show_edges: bool=True,
               transparent: bool=False,
               node_alpha: np.ndarray=None):
-
+    
     assert coord.shape[-1] == 3 and coord.ndim == 2   # making sure xyz is a 2d array and there are 3 dimensions (xyz)
 
-    fig = plt.figure()
-    fig.tight_layout()
+    if ax is None:
+        fig = plt.figure()
+        fig.tight_layout()
+        ax = fig.add_subplot(111, projection="3d")
 
-    ax = fig.add_subplot(111, projection="3d")
     ax.set_title(title)
     ax.view_init(angle, angle)
 
-    # Use life_mask as the alpha values for nodes
     if node_alpha is None:
         node_alpha = np.ones(coord.shape[0])  # Default alpha is 1 for all nodes
     else:
@@ -28,7 +29,6 @@ def plot_3d_G(G: nx.Graph,
 
     node_xyz = np.array([coord[v] for v in sorted(G)])
 
-    # Plot all nodes with varying alpha values
     for i, xyz in enumerate(node_xyz):
         ax.scatter(*xyz, s=node_size, ec='w', c='b', alpha=node_alpha[i])
 
@@ -42,8 +42,8 @@ def plot_3d_G(G: nx.Graph,
     if transparent:
         ax.grid(False)
         ax.set_axis_off()
-
-    plt.show()
+        
+    return ax
 
 def plot_3d_coords(coord: np.ndarray,
                    title: str, 

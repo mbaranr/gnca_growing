@@ -33,7 +33,8 @@ class GraphConv(nn.Module):
         self.output_dim = output_dim
         
         self.weight = nn.Parameter(torch.FloatTensor(input_dim, output_dim).to(self.device))
-
+        nn.init.xavier_uniform_(self.weight)
+        
         if bias:
             self.bias = nn.Parameter(torch.FloatTensor(output_dim).to(self.device))
             nn.init.zeros_(self.bias)
@@ -62,7 +63,10 @@ class GraphConv(nn.Module):
             y = y + self.bias
 
         if self.normalize_embedding:
-            y = F.normalize(y, p=2, dim=2)
+            if y.dim() == 3:
+                y = F.normalize(y, p=2, dim=2) # if batch dimension is present
+            elif y.dim() == 2:
+                y = F.normalize(y, p=2, dim=1)
 
         return y
     

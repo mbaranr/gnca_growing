@@ -9,14 +9,14 @@ from utils.operations import get_living_mask
 
 class GNCAModel(nn.Module):
     
-    def __init__(self, input_dim, channel_n, fire_rate):
+    def __init__(self, input_dim, channel_n, fire_rate, device):
         super(GNCAModel, self).__init__()
         self.channel_n = channel_n
         self.fire_rate = fire_rate
         
-        self.relu = nn.LeakyReLU
-        self.gc1 = GraphConv(input_dim, 128)
-        self.gc2 = GraphConv(128, channel_n)
+        self.relu = nn.LeakyReLU()
+        self.gc1 = GraphConv(input_dim, 128, device=device)
+        self.gc2 = GraphConv(128, channel_n, device=device)
 
     def perceive(self, x, adj):
     
@@ -43,7 +43,8 @@ class GNCAModel(nn.Module):
         dx = self.relu(dx)
         dx = self.gc2(dx, adj)
 
-        update_mask = torch.rand_like(x[:, :, :, :1]) <= fire_rate
+        update_mask = torch.rand_like(x[:, :1]) <= fire_rate       
+        
         x += dx * update_mask.float()
 
         post_life_mask = get_living_mask(x, adj)
