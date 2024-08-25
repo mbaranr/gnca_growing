@@ -63,4 +63,11 @@ def plot_3d_coords(coord: np.ndarray,
     if transparent:
         ax.grid(False)
         ax.set_axis_off()  
-            
+
+def plot_loss(losses, epochs):
+    plt.figure(figsize=(10, 6))
+    plt.plot(range(epochs), losses)
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.title('Training Loss Over Epochs')
+    plt.show()

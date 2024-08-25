@@ -19,14 +19,12 @@ class GNCAModel(nn.Module):
         self.gc2 = GraphConv(128, channel_n, device=device)
 
     def perceive(self, x, adj):
-    
-        # Graph convolution to aggregate neighbor information
+        # graph convolution to aggregate neighbor information
         neighbor_agg = torch.matmul(adj, x)
 
-        # Compute gradient-like information (difference between node state and neighbor aggregation)
+        # gradient-like information (difference between node state and neighbor aggregation)
         grad = neighbor_agg - x
-        
-        # Concatenate the original states with the gradient information
+
         perception = torch.cat([x, grad], dim=-1)
         
         return perception
@@ -43,9 +41,11 @@ class GNCAModel(nn.Module):
         dx = self.relu(dx)
         dx = self.gc2(dx, adj)
 
-        update_mask = torch.rand_like(x[:, :1]) <= fire_rate       
-        
+        update_mask = torch.rand_like(x[:, :1]) <= fire_rate
+
         x += dx * update_mask.float()
+
+        x[:, 0] = torch.sigmoid(x[:, 0]) # maintaining values between 0 and 1
 
         post_life_mask = get_living_mask(x, adj)
 
