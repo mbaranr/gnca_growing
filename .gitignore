@@ -1,2 +1,3 @@
 *.pyc
 /data/datasets
+notebooks/train_log/*

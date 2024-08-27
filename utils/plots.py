@@ -10,7 +10,9 @@ def plot_3d_G(G: nx.Graph,
               node_size: float=100.0,
               show_edges: bool=True,
               transparent: bool=False,
-              node_alpha: np.ndarray=None):
+              node_alpha: np.ndarray=None,
+              fixed_range: bool=False,
+              axis_range: float=None):
     
     assert coord.shape[-1] == 3 and coord.ndim == 2   # making sure xyz is a 2d array and there are 3 dimensions (xyz)
 
@@ -29,8 +31,14 @@ def plot_3d_G(G: nx.Graph,
 
     node_xyz = np.array([coord[v] for v in sorted(G)])
 
-    for i, xyz in enumerate(node_xyz):
-        ax.scatter(*xyz, s=node_size, ec='w', c='b', alpha=node_alpha[i])
+    significant_nodes = node_alpha > 0
+
+    significant_coords = coord[significant_nodes]
+    significant_alpha = node_alpha[significant_nodes]
+
+    # Plot significant nodes
+    ax.scatter(significant_coords[:, 0], significant_coords[:, 1], significant_coords[:, 2], 
+               s=node_size, ec='w', c='b', alpha=significant_alpha)
 
     if show_edges:
         # Plot edges with alpha = min(alpha of n1, alpha of n2)
@@ -42,6 +50,16 @@ def plot_3d_G(G: nx.Graph,
     if transparent:
         ax.grid(False)
         ax.set_axis_off()
+
+    if fixed_range:
+        if axis_range is None:
+            # Compute axis range from the data
+            min_range = np.min(coord)
+            max_range = np.max(coord)
+            axis_range = max(max_range - min_range, 1.0)  # Ensure non-zero range
+        ax.set_xlim([0, axis_range])
+        ax.set_ylim([0, axis_range])
+        ax.set_zlim([0, axis_range])
         
     return ax
 
@@ -71,3 +89,44 @@ def plot_loss(losses, epochs):
     plt.ylabel('Loss')
     plt.title('Training Loss Over Epochs')
     plt.show()
+
+def generate_pool_image(coords, pool, epoch, num_graphs=50, filename='pool_'):
+
+    grid_size = (10, 5)  # 10x5 grid for 50 graphs
+
+    fig = plt.figure(figsize=(grid_size[1] * 4, grid_size[0] * 4))
+    axes = [fig.add_subplot(grid_size[0], grid_size[1], i + 1, projection='3d') for i in range(num_graphs)]
+    
+    for i in range(num_graphs):
+        ax = axes[i]
+        node_alpha = pool.x[i][:, 0].cpu().numpy()
+        plot_pool_graph(ax, coords, node_alpha)
+    
+    plt.tight_layout()
+    plt.savefig('train_log/' + filename + str(epoch) + '.png', bbox_inches='tight', pad_inches=0.1)
+    plt.close(fig)
+
+
+def plot_pool_graph(ax, coords, node_alpha, axis_range=1, angle=30, transparent=True):
+    """
+    Plot a single graph on a given axis.
+    """
+    # Clear the axis
+    ax.clear()
+
+    ax.view_init(angle, angle)
+
+    if transparent:
+        ax.grid(False)
+        ax.set_axis_off()
+
+    # ax.set_xlim([0, axis_range])
+    # ax.set_ylim([0, axis_range])
+    # ax.set_zlim([0, axis_range])
+    
+    significant_nodes = node_alpha > 0
+    
+    significant_coords = coords[significant_nodes]
+
+    if significant_coords.size > 0:
+        ax.scatter(significant_coords[:, 0], significant_coords[:, 1], s=10, c='b', alpha=node_alpha[significant_nodes])

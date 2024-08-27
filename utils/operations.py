@@ -46,7 +46,7 @@ def get_living_mask(x, adj, threshold=0.1):
         torch.Tensor: Boolean mask indicating alive status of each node.
         """
         # Extract the 'alive' feature, assumed to be the first feature in x
-        alive_feature = x[:, 0].unsqueeze(1)
+        alive_feature = x[:, :, 0].unsqueeze(2)
         
         # Propagate the alive feature to neighbors using adjacency matrix
         neighbor_alive_values = torch.matmul(adj, alive_feature)  # Shape: (num_nodes, 1)
