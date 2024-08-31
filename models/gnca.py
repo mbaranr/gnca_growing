@@ -41,7 +41,7 @@ class GNCAModel(nn.Module):
         dx = self.relu(dx)
         dx = self.gc2(dx, adj)
 
-        update_mask = torch.rand_like(x[:, :1]) <= fire_rate
+        update_mask = torch.rand_like(x[:, :, :1]) <= fire_rate
 
         x += dx * update_mask.float()
 

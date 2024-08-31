@@ -27,9 +27,9 @@ def plot_3d_G(G: nx.Graph,
     if node_alpha is None:
         node_alpha = np.ones(coord.shape[0])  # Default alpha is 1 for all nodes
     else:
-        node_alpha = np.array(node_alpha).flatten()
+        node_alpha = np.clip(np.array(node_alpha).flatten())
 
-    node_xyz = np.array([coord[v] for v in sorted(G)])
+    node_xyz = np.array([coord[v] for v in sorted(G)], 0, 1)
 
     significant_nodes = node_alpha > 0
 
@@ -120,13 +120,18 @@ def plot_pool_graph(ax, coords, node_alpha, axis_range=1, angle=30, transparent=
         ax.grid(False)
         ax.set_axis_off()
 
-    # ax.set_xlim([0, axis_range])
-    # ax.set_ylim([0, axis_range])
-    # ax.set_zlim([0, axis_range])
+    ax.set_xlim([0, axis_range])
+    ax.set_ylim([0, axis_range])
+    ax.set_zlim([0, axis_range])
     
     significant_nodes = node_alpha > 0
     
     significant_coords = coords[significant_nodes]
 
     if significant_coords.size > 0:
-        ax.scatter(significant_coords[:, 0], significant_coords[:, 1], s=10, c='b', alpha=node_alpha[significant_nodes])
+        ax.scatter(
+            significant_coords[:, 0],  
+            significant_coords[:, 1],  
+            significant_coords[:, 2],  
+            s=10, c='b', alpha=np.clip(node_alpha[significant_nodes], 0, 1)
+        )
