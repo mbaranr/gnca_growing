@@ -27,9 +27,9 @@ def plot_3d_G(G: nx.Graph,
     if node_alpha is None:
         node_alpha = np.ones(coord.shape[0])  # Default alpha is 1 for all nodes
     else:
-        node_alpha = np.clip(np.array(node_alpha).flatten())
+        node_alpha = np.clip(np.array(node_alpha).flatten(), 0, 1)
 
-    node_xyz = np.array([coord[v] for v in sorted(G)], 0, 1)
+    node_xyz = np.array([coord[v] for v in sorted(G)])
 
     significant_nodes = node_alpha > 0
 

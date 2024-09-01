@@ -12,11 +12,11 @@ class GraphConv(nn.Module):
                  output_dim: int,
                  dropout: float=0.0, 
                  bias: bool=True,
-                 add_self: bool=True,
+                 add_self: bool=False,
                  normalize_embedding: bool=True,
                  expect_normal: bool=False,
                  device: torch.device=None):
-        
+               
         super(GraphConv, self).__init__()
 
         self.expect_normal = expect_normal
@@ -32,19 +32,16 @@ class GraphConv(nn.Module):
         self.input_dim = input_dim
         self.output_dim = output_dim
         
-        self.weight = nn.Parameter(torch.FloatTensor(input_dim, output_dim).to(self.device))
-        nn.init.xavier_uniform_(self.weight)
-        
+        self.linear = nn.Linear(input_dim, output_dim)
+        self.bias = nn.Parameter(torch.FloatTensor(output_dim)) if bias else None
+
+        nn.init.xavier_uniform_(self.linear.weight)
         if bias:
-            self.bias = nn.Parameter(torch.FloatTensor(output_dim).to(self.device))
             nn.init.zeros_(self.bias)
-        else:
-            self.bias = None
 
     def forward(self, x, adj):  
-
-        x.to(self.device)
-        adj.to(self.device)
+        x = x.to(self.device)
+        adj = adj.to(self.device)
         
         if not self.expect_normal:
             adj = normalize_adj(adj)
@@ -52,21 +49,20 @@ class GraphConv(nn.Module):
         if self.dropout > 0.001:
             x = self.dropout_layer(x)
 
-        y = torch.matmul(adj, x)
+        hidden = self.linear(x)  # linear transformation
+        hidden = torch.matmul(adj, hidden)  # aggregation
 
         if self.add_self:
-            y += x
-
-        y = torch.matmul(y,self.weight)
+            hidden += x  
 
         if self.bias is not None:
-            y = y + self.bias
+            hidden += self.bias
 
         if self.normalize_embedding:
-            if y.dim() == 3:
-                y = F.normalize(y, p=2, dim=2) # if batch dimension is present
-            elif y.dim() == 2:
-                y = F.normalize(y, p=2, dim=1)
+            if hidden.dim() == 3:
+                hidden = F.normalize(hidden, p=2, dim=2)
+            elif hidden.dim() == 2:
+                hidden = F.normalize(hidden, p=2, dim=1)
 
-        return y
+        return hidden
     

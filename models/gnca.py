@@ -45,7 +45,7 @@ class GNCAModel(nn.Module):
 
         x += dx * update_mask.float()
 
-        x[:, 0] = torch.sigmoid(x[:, 0]) # maintaining values between 0 and 1
+        # x[:, :, 0] = torch.sigmoid(x[:, :, 0]) # maintaining values between 0 and 1
 
         post_life_mask = get_living_mask(x, adj)
 
