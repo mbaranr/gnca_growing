@@ -1,0 +1,10 @@
+name: gnca  
+channels:
+  - conda-forge  
+  - pytorch
+dependencies:
+  - numpy
+  - networkx
+  - pytorch
+  - matplotlib
+  - tqdm
