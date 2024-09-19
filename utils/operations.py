@@ -29,7 +29,7 @@ def E2G(E: np.ndarray,
         G = nx.Graph()
         for i in range(0 if num_nodes is None else num_nodes):
                 G.add_node(i)
-        for edge in E.T:
+        for edge in E:
                 G.add_edge(edge[0].item(), edge[1].item())
         return G
 
