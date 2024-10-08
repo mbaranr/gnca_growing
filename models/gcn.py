@@ -1,10 +1,32 @@
-import sys
-sys.path.append('../')  
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from utils.operations import normalize_adj
+
+# Adaptation from GeneralGNN spektral model (https://github.com/danielegrattarola/spektral/blob/master/spektral/models/general_gnn.py#L23) (https://github.com/danielegrattarola/GNCA/blob/master/models/gnn_ca_simple.py)
+
+class GCNModel(nn.Module):
+
+    def __init__(self, 
+                 activation=1, 
+                 message_passing=1, 
+                 hidden=256,
+                 batch_norm=False,
+                 hidden_activation="relu",
+                 connectivity="cat",
+                 aggregate="sum", 
+                 device="cuda"
+                 ):
+        super(GCNModel, self).__init__()
+        
+        self.pre = 
+
+
+def MLP(nn.Module):
+    def __init__(self, ):
+
+
+
 
 class GraphConv(nn.Module):
     def __init__(self, 
@@ -65,4 +87,3 @@ class GraphConv(nn.Module):
                 hidden = F.normalize(hidden, p=2, dim=1)
 
         return hidden
-    

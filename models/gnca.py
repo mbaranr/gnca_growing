@@ -1,11 +1,10 @@
-import sys
-sys.path.append('../')  
-
 import torch
 import torch.nn.functional as F
 import torch.nn as nn
 from models.graph_convolution import GraphConv
 from utils.operations import get_living_mask
+
+# To do: check how perceive is done in GCNA literature.
 
 class GNCAModel(nn.Module):
     
