@@ -19,11 +19,33 @@ class GCNModel(nn.Module):
                  ):
         super(GCNModel, self).__init__()
         
-        self.pre = 
+        # self.pre = 
 
 
 def MLP(nn.Module):
-    def __init__(self, ):
+    def __init__(self, 
+                 output,
+                 hidden=256,
+                 layers=2,
+                 batch_norm=False,
+                 dropout=0.0,
+                 activation="relu",
+                 final_activation=None
+                 ):
+        self.hidden = hidden
+        self.output = output
+        
+        for i in range(layers):
+            # Linear
+            self.mlp.add(Dense(hidden if i < layers - 1 else output))
+            # Batch norm
+            if self.batch_norm:
+                self.mlp.add(BatchNormalization())
+            # Dropout
+            self.mlp.add(Dropout(self.dropout_rate))
+            # Activation
+            self.mlp.add(get_act(activation if i < layers - 1 else final_activation))
+
 
 
 
