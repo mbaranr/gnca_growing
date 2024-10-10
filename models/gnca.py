@@ -1,22 +1,19 @@
 import torch
 import torch.nn.functional as F
 import torch.nn as nn
-from models.graph_convolution import GraphConv
+from models.gcn import GCNModel
 from utils.operations import get_living_mask
 
 # To do: check how perceive is done in GCNA literature.
 
 class GNCAModel(nn.Module):
     
-    def __init__(self, input_dim, channel_n, fire_rate, device):
+    def __init__(self, input_dim, channel_n, fire_rate):
         super(GNCAModel, self).__init__()
         self.channel_n = channel_n
         self.fire_rate = fire_rate
-        
-        self.relu = nn.LeakyReLU()
-        self.gc1 = GraphConv(input_dim, 128, device=device)
-        self.gc2 = GraphConv(128, channel_n, device=device)
-
+        self.gcn = GCNModel(input_dim, channel_n)
+    
     def perceive(self, x, adj):
         # graph convolution to aggregate neighbor information
         neighbor_agg = torch.matmul(adj, x)
@@ -36,9 +33,7 @@ class GNCAModel(nn.Module):
 
         y = self.perceive(x, adj)
 
-        dx = self.gc1(y, adj)
-        dx = self.relu(dx)
-        dx = self.gc2(dx, adj)
+        dx = self.gcn(y, adj)
 
         update_mask = torch.rand_like(x[:, :, :1]) <= fire_rate
 
