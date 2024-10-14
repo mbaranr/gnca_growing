@@ -1,2 +1,2 @@
-# gnca-mitosis
-GNCAs for single-cell mitosis.
+# Growing Graph Neural Cellular Automata
+GNCAs for single-cell morphogenesis.
