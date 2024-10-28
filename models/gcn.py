@@ -42,10 +42,11 @@ class GraphConv(nn.Module):
                  input_dim: int,
                  output_dim: int,
                  dropout: float=0.0, 
-                 bias: bool=False,
+                 bias: bool=True,
                  add_self: bool=False,
                  normalize_embedding: bool=True,
-                 expect_normal: bool=False
+                 expect_normal: bool=False,
+                 use_linear: bool=False  
                  ):
         super(GraphConv, self).__init__()
 
@@ -53,6 +54,7 @@ class GraphConv(nn.Module):
         self.add_self = add_self
         self.dropout = dropout
         self.normalize_embedding = normalize_embedding
+        self.use_linear = use_linear
 
         if dropout > 0.001:
             self.dropout_layer = nn.Dropout(p=dropout)
@@ -62,6 +64,9 @@ class GraphConv(nn.Module):
         
         self.bias = nn.Parameter(torch.FloatTensor(output_dim)) if bias else None
 
+        if use_linear:
+            self.linear = nn.Linear(input_dim, output_dim, bias=bias)
+
     def forward(self, x, adj):  
         if not self.expect_normal:
             adj = normalize_adj(adj)
@@ -69,7 +74,12 @@ class GraphConv(nn.Module):
         if self.dropout > 0.001:
             x = self.dropout_layer(x)
 
-        hidden = torch.matmul(adj, x)  # aggregation
+        # optional linear transformation
+        if self.use_linear:
+            x = self.linear(x)
+
+        # graph convolution
+        hidden = torch.matmul(adj, x)
 
         if self.add_self:
             hidden += x  
@@ -82,6 +92,7 @@ class GraphConv(nn.Module):
 
         return hidden
 
+
 class GCNModel(nn.Module):
 
     def __init__(self,
@@ -93,7 +104,8 @@ class GCNModel(nn.Module):
                  hidden_activation="relu",
                  connectivity="cat",
                  dropout=0.0,
-                 pool=None
+                 pool=None,
+                 linear_conv=False
                  ):
         super(GCNModel, self).__init__()
 
@@ -103,10 +115,15 @@ class GCNModel(nn.Module):
         
         self.pre = MLP(input_dim, hidden_dim, layers=2, batch_norm=batch_norm, dropout=dropout, activation=hidden_activation)
 
-        # message passing layers
-        self.gcs = nn.ModuleList([GraphConv(hidden_dim, hidden_dim, dropout=dropout, expect_normal=False, add_self=False) for _ in range(message_passing)])
+        self.gcs = nn.ModuleList()
 
-        self.post = MLP(hidden_dim*2, output_dim, layers=2, batch_norm=batch_norm, dropout=dropout, activation=hidden_activation)   # hidden_dim * 2 due to connectivity
+        # message passing layers
+        for i in range(message_passing):
+            # dimension doubles after each layer if 'cat' is used
+            dim = hidden_dim * (2 ** i) if self.connectivity == "cat" else hidden_dim
+            self.gcs.append(GraphConv(dim, dim, dropout=dropout, expect_normal=False, add_self=False, use_linear=linear_conv))
+
+        self.post = MLP(hidden_dim * (2 ** message_passing) if self.connectivity == "cat" else hidden_dim, output_dim, layers=2, batch_norm=batch_norm, dropout=dropout, activation=hidden_activation) 
 
         if self.connectivity == "sum":
             self.skip_connect = lambda x, skip: x + skip
@@ -117,7 +134,6 @@ class GCNModel(nn.Module):
 
     def forward(self, x, adj):
         # pre-processing
-        
         out = self.pre(x)
         skip = out
         

@@ -4,16 +4,14 @@ import torch.nn as nn
 from models.gcn import GCNModel
 from utils.operations import get_living_mask
 
-# To do: check how perceive is done in GCNA literature.
-
 class GNCAModel(nn.Module):
     
     def __init__(self, input_dim, channel_n, fire_rate):
         super(GNCAModel, self).__init__()
         self.channel_n = channel_n
         self.fire_rate = fire_rate
-        self.gcn = GCNModel(input_dim, channel_n)
-    
+        self.gcn = GCNModel(input_dim, channel_n, connectivity="cat", hidden_dim=256, batch_norm=False, message_passing=1, linear_conv=False)
+
     def perceive(self, x, adj):
         # graph convolution to aggregate neighbor information
         neighbor_agg = torch.matmul(adj, x)
@@ -25,7 +23,7 @@ class GNCAModel(nn.Module):
         
         return perception
 
-    def forward(self, x, adj, fire_rate=None, angle=0.0, step_size=1.0):
+    def forward(self, x, adj, fire_rate=None):
         if fire_rate is None:
             fire_rate = self.fire_rate
 
