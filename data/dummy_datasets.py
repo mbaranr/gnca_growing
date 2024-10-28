@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+from PIL import Image
 
 def create_3d_canvas(length: int, dist: float):
     """
@@ -28,7 +29,7 @@ def create_3d_canvas(length: int, dist: float):
                 if z < length - 1:  
                     edges.append((node_idx, node_idx + 1))
 
-    E = np.array(edges).T  # shape (num_edges, 2)
+    E = np.array(edges)  # shape (num_edges, 2)
 
     return coord, E
 
@@ -63,9 +64,6 @@ def create_2d_canvas(length: int, dist: float):
 def create_square_mask(length: int):
     return np.ones(length*length)
 
-from PIL import Image
-import numpy as np
-
 def create_image_mask(image_path: str, length: int):
     """
     Creates a binary mask from a PNG image where all pixels with non-zero alpha (non-transparent)
@@ -90,18 +88,20 @@ def create_pyramid_mask(length: int):
     mask = np.zeros((length, length, length), dtype=np.float32)
 
     # center of the base
-    center = (length - 1) / 2
+    center_xy = (length - 1) / 2
+    center_z = (length - 1) / 2
 
     for z in range(length):
         # calculate the base size for this z level
-        base_size = length - z * 2  # base size decreases by 2 for each z level
+        relative_z = abs(z - center_z) 
+        base_size = length - 2 * relative_z
         
         if base_size <= 0:
             break
 
         # boundaries of the square base at this level
-        x_start = int(np.ceil(center - base_size / 2))
-        x_end = int(np.floor(center + base_size / 2))
+        x_start = int(np.ceil(center_xy - base_size / 2))
+        x_end = int(np.floor(center_xy + base_size / 2))
         y_start = x_start
         y_end = x_end
         

@@ -1,4 +1,5 @@
 import torch
+import torch.nn as nn
 import networkx as nx
 import numpy as np
 
@@ -53,3 +54,28 @@ def get_living_mask(x, adj, threshold=0.1):
 
         # Determine the max alive value in each node's neighborhood (including itself)
         return torch.max(alive_feature, neighbor_alive_values) > threshold
+
+def get_activation(activation):
+    if activation == "relu":
+        return nn.ReLU()
+    elif activation == "prelu":
+        return nn.PReLU()
+    elif activation == "leaky_relu":
+        return nn.LeakyReLU()
+    elif activation == "sigmoid":
+        return nn.Sigmoid()
+    elif activation == "tanh":
+        return nn.Tanh()
+    elif activation == "softmax":
+        return nn.Softmax(dim=1)
+    elif activation is None:
+        return nn.Identity()  
+    else:
+        raise ValueError(f"Unsupported activation: {activation}")
+    
+def init_weights(m):
+    if isinstance(m, nn.Linear):
+        torch.nn.init.xavier_uniform_(m.weight)
+        if m.bias is not None:
+            m.bias.data.fill_(0.01)
+
