@@ -16,7 +16,7 @@ GNCAs for single-cell morphogenesis.
     
 ## Credits
 
-- [m4mbo](https://github.com/m4mbo) - Code.
+- [mbaranr](https://github.com/mbaranr) - Code.
 - [Mordvintsev et al.](https://distill.pub/2020/growing-ca/) - NCAs.
 - [Gattarola et al.](https://proceedings.neurips.cc/paper/2021/hash/af87f7cdcda223c41c3f3ef05a3aaeea-Abstract.html) - GNCAs.
 
